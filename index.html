@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lichtrichting bij portretten</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; margin: 0; padding: 16px; color: #2C2C2A; background: #fff; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 12px; }
+  .th { font-size: 14px; font-weight: 500; fill: #2C2C2A; }
+  .ts { font-size: 12px; fill: #5F5E5A; }
+  .ctrl { display: flex; align-items: center; gap: 12px; margin: 8px 0; font-size: 14px; color: #5F5E5A; }
+  .ctrl input { flex: 1; }
+  #nm { font-size: 16px; font-weight: 500; }
+  #ds { font-size: 14px; color: #5F5E5A; line-height: 1.6; min-height: 46px; margin-bottom: 8px; }
+  .node { cursor: pointer; }
+  .node:hover { opacity: .8; }
+  .hint { font-size: 12px; color: #888780; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Lichtrichting bij portretten</h1>
+<svg id="big" width="100%" viewBox="0 0 680 240" role="img" aria-label="Portret bij gekozen lichthoek"></svg>
+<div class="ctrl">
+  <span>Lichthoek</span>
+  <input type="range" id="sl" min="0" max="180" step="5" value="45" oninput="setT(+this.value)">
+  <span id="deg" style="min-width:40px;text-align:right">45°</span>
+</div>
+<div id="nm"></div>
+<div id="ds"></div>
+<svg id="strip" width="100%" viewBox="0 0 680 195" role="img" aria-label="Vijf tussenfasen van frontaal tot tegenlicht"></svg>
+<div class="hint">Kaderje rechtsboven: bovenaanzicht. Grijze cirkel = model, donker blokje = fotograaf, geel bolletje = lamp. Klik op een tussenfase om ze groot te zien.</div>
+</div>
+<script>
+function portrait(t,id){
+const r=t*Math.PI/180,c=Math.cos(r),s=Math.sin(r),k=Math.max(0.01,40*Math.abs(c)),f=(1-c)/2,glow=Math.max(0,-c);
+const sh=t<=90?`M90 43 A40 52 0 0 1 90 147 A${k} 52 0 0 0 90 43 Z`:`M90 43 A40 52 0 0 1 90 147 A${k} 52 0 0 1 90 43 Z`;
+const body="M78 130 L102 130 L102 162 Q165 165 170 220 L10 220 Q15 165 78 162 Z";
+const xs=10+(1-f)*160;
+let g=`<defs><clipPath id="c${id}"><path d="${body}"/></clipPath></defs>`;
+g+=`<rect x="0" y="0" width="180" height="220" rx="8" fill="#888780"/>`;
+g+=`<circle cx="90" cy="92" r="78" fill="#FAC775" opacity="${(glow*0.85).toFixed(2)}"/>`;
+g+=`<g clip-path="url(#c${id})"><rect x="0" y="120" width="180" height="100" fill="#85B7EB"/><rect x="0" y="125" width="180" height="40" fill="#F0C9A8"/><rect x="${xs}" y="120" width="${170-xs+10}" height="100" fill="#0C447C"/><rect x="${xs}" y="125" width="${Math.max(0,102-xs)}" height="40" fill="#5A3E30"/></g>`;
+g+=`<ellipse cx="90" cy="95" rx="40" ry="52" fill="#F0C9A8"/>`;
+g+=`<path d="${sh}" fill="#5A3E30"/>`;
+g+=`<circle cx="75" cy="90" r="2.5" fill="#2C2C2A"/><circle cx="105" cy="90" r="2.5" fill="#2C2C2A"/>`;
+g+=`<path d="M82 122 Q90 127 98 122" fill="none" stroke="#9C5A48" stroke-width="1.4"/>`;
+if(t>90){const op=((t-90)/90).toFixed(2);
+g+= t>=170?`<ellipse cx="90" cy="95" rx="40" ry="52" fill="none" stroke="#FFF6E0" stroke-width="2.5" opacity="${op}"/><path d="M10 220 Q15 165 78 162 M102 162 Q165 165 170 220" fill="none" stroke="#FFF6E0" stroke-width="2" opacity="${op}"/>`
+:`<path d="M90 43 A40 52 0 0 0 90 147" fill="none" stroke="#FFF6E0" stroke-width="2.5" opacity="${op}"/><path d="M10 220 Q15 165 78 162" fill="none" stroke="#FFF6E0" stroke-width="2" opacity="${op}"/>`;}
+const lx=(148-18*s).toFixed(1),ly=(32+18*c).toFixed(1);
+g+=`<rect x="122" y="6" width="52" height="54" rx="6" fill="#F1EFE8" opacity="0.9"/><line x1="128" y1="32" x2="168" y2="32" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 2"/><circle cx="148" cy="32" r="5" fill="#888780"/><rect x="144" y="41" width="8" height="5" fill="#444441"/><circle cx="${lx}" cy="${ly}" r="3.5" fill="#FAC775" stroke="#BA7517" stroke-width="1"/>`;
+return g;}
+function info(t){
+if(t<=20)return['Frontaal licht','Licht van achter de fotograaf. Bijna geen schaduw: het gezicht oogt vlak en weinig plastisch.'];
+if(t<=70)return['Zijlicht, schuin van voren','Licht van schuin achter de fotograaf. Een deel van het gezicht valt in schaduw: vorm en diepte komen naar voren.'];
+if(t<=90)return['Zijlicht, volledig opzij','Licht recht van opzij. De helft van het gezicht ligt in schaduw: maximaal reliëf en textuur.'];
+if(t<170)return['Tegenlicht, schuin van achter','Het licht komt al iets van achter het model: dit is al tegenlicht. Er verschijnt een lichtrand, het grootste deel van het gezicht ligt in schaduw.'];
+return['Volledig tegenlicht','Licht recht achter het model. Silhouet met lichtrand rondom: sfeer en glans, geen detail in het gezicht.'];}
+function setT(t){
+document.getElementById('sl').value=t;
+document.getElementById('deg').textContent=t+'°';
+document.getElementById('big').innerHTML=`<g transform="translate(250,10)">${portrait(t,'big')}</g>`;
+const [n,d]=info(t);
+document.getElementById('nm').textContent=n;
+document.getElementById('ds').textContent=d;}
+const A=[0,45,90,135,180],L=['Frontaal','Schuin voor','Opzij','Schuin achter','Tegenlicht'];
+let st='';
+A.forEach((a,i)=>{const x=40+i*123;
+st+=`<g class="node" onclick="setT(${a})"><g transform="translate(${x},8) scale(0.6)">${portrait(a,'s'+i)}</g><text class="th" x="${x+54}" y="158" text-anchor="middle">${a}°</text><text class="ts" x="${x+54}" y="178" text-anchor="middle">${L[i]}</text></g>`;});
+document.getElementById('strip').innerHTML=st;
+setT(45);
+</script>
+</body>
+</html>
