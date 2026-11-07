@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afstandswet: hardheid en contrast van licht</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; margin: 0; padding: 16px; color: #2C2C2A; background: #fff; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 12px; }
+  .ts { font-size: 12px; fill: #5F5E5A; }
+  .ctrl { display: flex; align-items: center; gap: 12px; margin: 4px 0 12px; font-size: 14px; color: #5F5E5A; }
+  .ctrl input { flex: 1; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .tile { background: #F1EFE8; border-radius: 8px; padding: 10px 12px; }
+  .tile .l { font-size: 13px; color: #5F5E5A; }
+  .tile .v { font-size: 20px; font-weight: 500; }
+  .hint { font-size: 12px; color: #888780; margin-top: 10px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Afstandswet: hardheid en contrast van licht</h1>
+<svg width="100%" viewBox="0 0 680 340" role="img" aria-label="Lamp en bol met schaduw en lichtmeting">
+<defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="0"><stop id="s1" offset="40%" stop-color="#EBEBEB"/><stop id="s2" offset="60%" stop-color="#555"/></linearGradient></defs>
+<line x1="40" y1="200" x2="640" y2="200" stroke="#B4B2A9" stroke-width="0.5"/>
+<ellipse id="pen" cx="560" cy="201" rx="50" ry="8" fill="#888780" opacity="0.35"/>
+<ellipse id="umb" cx="560" cy="201" rx="40" ry="5" fill="#444441" opacity="0.7"/>
+<line id="c1" x1="470" y1="150" x2="200" y2="115" stroke="#EF9F27" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+<line id="c2" x1="470" y1="150" x2="200" y2="185" stroke="#EF9F27" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+<rect id="lamp" x="190" y="115" width="10" height="70" rx="2" fill="#FAC775" stroke="#BA7517" stroke-width="1"/>
+<circle cx="520" cy="150" r="50" fill="url(#sg)" stroke="#B4B2A9" stroke-width="0.5"/>
+<line id="dl" x1="200" y1="228" x2="470" y2="228" stroke="#888780" stroke-width="0.5"/>
+<text id="dt" class="ts" x="335" y="246" text-anchor="middle">d = 2,0 m</text>
+<text class="ts" x="40" y="268">Licht dat het onderwerp bereikt, vóór belichtingscorrectie (in stops)</text>
+<text class="ts" x="40" y="294">Belichte kant</text>
+<rect id="b1" x="150" y="284" width="100" height="14" rx="3" fill="#EF9F27"/>
+<text id="v1" class="ts" x="260" y="294"></text>
+<text class="ts" x="40" y="322">Schaduwkant</text>
+<rect id="b2" x="150" y="312" width="100" height="14" rx="3" fill="#888780"/>
+<text id="v2" class="ts" x="260" y="322"></text>
+</svg>
+<div class="ctrl">
+  <span>Dichtbij</span>
+  <input type="range" id="sl" min="0.6" max="5" step="0.1" value="2" oninput="upd(+this.value)">
+  <span>Veraf</span>
+</div>
+<div class="grid">
+  <div class="tile"><div class="l">Lichtsterkte (t.o.v. 1 m)</div><div class="v" id="m1"></div></div>
+  <div class="tile"><div class="l">Schijnbare grootte lamp</div><div class="v" id="m2"></div></div>
+  <div class="tile"><div class="l">Karakter licht</div><div class="v" id="m3"></div></div>
+  <div class="tile"><div class="l">Contrast licht / schaduw</div><div class="v" id="m4"></div></div>
+</div>
+<div class="hint">De belichting wordt telkens bijgeregeld zodat de belichte kant van de bol even licht blijft. De lamp is een softbox van 70 cm; het omgevingslicht (dat de schaduwkant belicht) blijft gelijk.</div>
+</div>
+<script>
+const K=1,A=0.04,SB=0.7,maxAng=2*Math.atan(SB/2/0.6);
+const nl=x=>x.toFixed(1).replace('.',',');
+function upd(d){
+const x=Math.max(46,460-d*80);
+document.getElementById('lamp').setAttribute('x',x);
+['c1','c2'].forEach((id,i)=>{const e=document.getElementById(id);e.setAttribute('x2',x+10);e.setAttribute('y2',i?185:115);});
+document.getElementById('dl').setAttribute('x1',x+10);
+const dt=document.getElementById('dt');dt.setAttribute('x',(x+10+470)/2);dt.textContent='d = '+nl(d)+' m';
+const ang=2*Math.atan(SB/2/d),angD=ang*180/Math.PI;
+const w=Math.max(2,(ang/maxAng)*70);
+document.getElementById('s1').setAttribute('offset',(50-w/2)+'%');
+document.getElementById('s2').setAttribute('offset',(50+w/2)+'%');
+const lit=K/(d*d)+A,r=A/lit,g=Math.round(235*Math.pow(r,1/2.2));
+document.getElementById('s2').setAttribute('stop-color',`rgb(${g},${g},${g})`);
+const pen=w*0.8;
+document.getElementById('pen').setAttribute('rx',40+pen);
+document.getElementById('pen').setAttribute('ry',5+pen/6);
+document.getElementById('umb').setAttribute('opacity',(0.25+0.55*(1-r)).toFixed(2));
+const st=v=>Math.log2(v/0.01),s1=st(lit),s2=st(A);
+document.getElementById('b1').setAttribute('width',s1*55);
+document.getElementById('b2').setAttribute('width',s2*55);
+document.getElementById('v1').setAttribute('x',150+s1*55+8);
+document.getElementById('v2').setAttribute('x',150+s2*55+8);
+document.getElementById('v1').textContent=nl(s1)+' stops';
+document.getElementById('v2').textContent=nl(s2)+' stops (constant)';
+document.getElementById('m1').textContent=Math.round(100/(d*d))+'%';
+document.getElementById('m2').textContent=Math.round(angD)+'°';
+document.getElementById('m3').textContent=angD>28?'Zacht':angD>12?'Middelmatig':'Hard';
+document.getElementById('m4').textContent=nl(Math.log2(lit/A))+' stops';
+}
+upd(2);
+</script>
+</body>
+</html>
